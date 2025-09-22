@@ -10,6 +10,7 @@ const Room = ({ params }: { params: { roomid: string } }) => {
   const roomID = params.roomid;
 
   let myMeeting: any = async (element: any) => {
+    if (!element) return; // tránh gọi khi ref = null
     // generate Kit Token
     const appID = parseInt(process.env.NEXT_PUBLIC_ZEGO_APP_ID!);
     const serverSecret = process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET!;
@@ -24,19 +25,18 @@ const Room = ({ params }: { params: { roomid: string } }) => {
 
     // Create instance object from Kit Token.
     const zp = ZegoUIKitPrebuilt.create(kitToken);
+    // Chỉ lấy window khi đang client
+    const shareURL =
+      typeof window !== "undefined"
+        ? `${window.location.protocol}//${window.location.host}${window.location.pathname}?roomID=${roomID}`
+        : "";
     // start the call
     zp.joinRoom({
       container: element,
       sharedLinks: [
         {
           name: "Shareable link",
-          url:
-            window.location.protocol +
-            "//" +
-            window.location.host +
-            window.location.pathname +
-            "?roomID=" +
-            roomID,
+          url: shareURL,
         },
       ],
       scenario: {
@@ -45,7 +45,6 @@ const Room = ({ params }: { params: { roomid: string } }) => {
       maxUsers: 10,
     });
   };
-
   return <div className="w-full h-screen" ref={myMeeting}></div>;
 };
 
